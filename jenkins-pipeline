@@ -1,0 +1,29 @@
+pipeline {
+    agent any
+    
+     environment{
+        PATH = "/opt/maven/apache-maven-3.8.3/bin:$PATH"
+    }
+    stages {
+        stage("gitclone") {
+            steps {
+              git credentialsId: 'github-credentials', url: 'https://github.com/chakradharamuluru12/boxfuse-sample-java-war-hello.git'
+            }
+            
+        }
+        
+        stage("mvn build") {
+            steps {
+                sh "mvn clean install"
+            }
+        }
+        stage("deployment to tomcat") {
+            steps {
+               sshagent(['deployer']) {
+                 sh  "scp -o StrictHostKeyChecking=no webapp/target/hello-1.0.war centos@34.224.85.176:/opt/apache-tomcat-9.0.54/webapps"
+               }
+            }
+        }
+    }
+    
+}
